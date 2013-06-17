@@ -107,7 +107,7 @@ int handle_tun()
 {
 	int len = read(tun_fd, encap->readbuf(), encap->readbuflen());
 	if (len < 0)
-		return 0;
+		return -1;
 
 	encap->makepacket(len);
 
