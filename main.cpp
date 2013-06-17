@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 			if (strcmp(argv[i], "IPIP") == 0) {
 				encap = new Encap_IPIP();
 			} else if (strcmp(argv[i], "ICMP") == 0) {
-				encap == new Encap_ICMP();
+				encap = new Encap_ICMP();
 			} else {
 				usage();
 			}
