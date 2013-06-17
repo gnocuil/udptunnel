@@ -13,6 +13,7 @@
 
 #include "tun.h"
 #include "socket.h"
+#include "network.h"
 
 static int tun_fd;
 static char buf[2040];
@@ -104,32 +105,12 @@ static uint16_t getport_dest(char *ippacket)
 
 int handle_tun()
 {
-	int len = read(tun_fd, buf + 40, 2000);
+	int len = read(tun_fd, encap->readbuf(), encap->readbuflen());
 	if (len < 0)
 		return 0;
-/*
-	static long long sum = 0;
-	static int count = 0;
-	sum += len;
-	++count;
-	if (count % 1000 == 0) printf("TUN: read %d packets %lld bytes\n", count, sum);
-	usleep(10);
-*/
-/*	
-	uint32_t ip = *(uint32_t*)(buf + 40 + 16);
-	Binding* binding = find(ip, getport_dest(buf + 40));
-	if (!binding) {
-		return 0;
-	}
-*/
-	struct ip6_hdr *ip6hdr = (struct ip6_hdr *)buf;
-	ip6hdr->ip6_flow = htonl((6 << 28) | (0 << 20) | 0);		
-	ip6hdr->ip6_plen = htons(len & 0xFFFF);
-	ip6hdr->ip6_nxt = IPPROTO_IPIP;
-	ip6hdr->ip6_hops = 128;
-	memcpy(&(ip6hdr->ip6_src), &(addr6_TI), sizeof(struct in6_addr));
-	memcpy(&(ip6hdr->ip6_dst), &(addr6_TC), sizeof(struct in6_addr));
-	
-	return socket_send(buf, len + 40);
+
+	encap->makepacket(len);
+
+	return socket_send(encap->sendbuf(), encap->sendlen());
 	//return tun_send(buf, len + 40);
 }

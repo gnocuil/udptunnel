@@ -11,7 +11,7 @@
 
 unsigned mtu;
 
-ENCAP_MODE mode = IPIP;
+Encap *encap = NULL;
 
 int set_mtu(char *interface_name, unsigned mtu) {
 	int fd;

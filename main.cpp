@@ -13,6 +13,9 @@
 #include "tun.h"
 #include "network.h"
 #include "socket.h"
+#include "encap.h"
+#include "ipip.h"
+#include "icmp.h"
 
 using namespace std;
 
@@ -49,9 +52,9 @@ int main(int argc, char *argv[])
 		} else if (i + 1 < argc - 2 && strcmp(argv[i], "--encap") == 0) {
 			++i;
 			if (strcmp(argv[i], "IPIP") == 0) {
-				mode = IPIP;
+				encap = new Encap_IPIP();
 			} else if (strcmp(argv[i], "ICMP") == 0) {
-				mode == ICMP;
+				encap == new Encap_ICMP();
 			} else {
 				usage();
 			}
@@ -60,6 +63,11 @@ int main(int argc, char *argv[])
 	printf("TI_IPv6_ADDR: %s\nTC_IPv6_ADDR: %s\n", argv[argc - 2], argv[argc - 1]);
 	inet_pton(AF_INET6, argv[argc - 2], &addr6_TI);
 	inet_pton(AF_INET6, argv[argc - 1], &addr6_TC);
+	
+	if (encap == NULL)
+		encap = new Encap_IPIP();
+	printf("Encap Mode: %s\n", encap->name());
+
 
 	//Create TUN/TAP interface
 	int tun_fd = tun_create(tun_name);

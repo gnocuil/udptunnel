@@ -14,21 +14,25 @@
 
 #include "socket.h"
 #include "tun.h"
+#include "network.h"
 
-static int raw_fd;
+//static int raw_fd;
 static int send6_fd;
 static int send4_fd;
 static char buf[2000];
 
 int socket_init()
 {
-	//raw_fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_ALL));
-	raw_fd = socket(AF_INET6, SOCK_RAW, IPPROTO_IPIP);
-	
-	if (raw_fd < 0) {
-		fprintf(stderr, "socket_init: Error Creating socket: %m\n", errno);
+	int raw_fd = encap->init_socket();
+	if (raw_fd < 0)
 		return -1;
-	}
+	//raw_fd = socket(AF_PACKET, SOCK_DGRAM, htons(ETH_P_ALL));
+	//raw_fd = socket(AF_INET6, SOCK_RAW, IPPROTO_IPIP);
+	
+//	if (raw_fd < 0) {
+//		fprintf(stderr, "socket_init: Error Creating socket: %m\n", errno);
+//		return -1;
+//	}
 	
 //	if (fcntl(raw_fd, F_SETFL, O_NONBLOCK) < 0) {i
 //		fprintf(stderr, "socket_init: Error Setting nonblock: %m\n", errno);
@@ -55,23 +59,12 @@ int socket_init_tun()
 
 int handle_socket()
 {
-	struct sockaddr_in6 sin6addr;
-	socklen_t addr_len = sizeof (sin6addr);
-	int len = recvfrom(raw_fd, buf, 2000, 0, (struct sockaddr*)&sin6addr, &addr_len);
-	if (len < 0)
-		return 0;
-/*
-puts("handle_socket!");
-	static long long sum = 0;
-	static int count = 0;
-	sum += len;
-	++count;
-//	if (count % 1000 == 0) printf("socket: read %d packets %lld bytes\n", count, sum);
-*/
-//	printf("socket: read %d bytes\n", len);
+	if (encap->handle_socket() < 0)
+		return -1;
+
 	//sin6addr.sin6_addr is the IPv6 addr of TI (struct in6_addr)
 	//socket_send4(buf, len);
-	tun_send(buf, len);
+	tun_send(encap->send4buf(), encap->send4len());
 }
 /*
 int socket_send4(char *buf, int len)
