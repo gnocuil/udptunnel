@@ -11,6 +11,8 @@
 
 unsigned mtu;
 
+ENCAP_MODE mode = IPIP;
+
 int set_mtu(char *interface_name, unsigned mtu) {
 	int fd;
 	if ((fd = socket(PF_INET,SOCK_STREAM,0)) < 0) {

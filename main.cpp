@@ -22,6 +22,7 @@ static void usage()
 {
 	fprintf(stderr, "Usage: tunnel [options] <TI_IPv6_ADDR> <TC_IPv6_ADDR>\n");
 	fprintf(stderr, "  options: --name <TUNNEL_NAME>       default: 4over6\n");
+	fprintf(stderr, "           --encap { IPIP | ICMP }    default: IPIP\n");
 	fprintf(stderr, "           --mtu <MTU_VALUE>          default: %d\n", DEFAULT_MTU);
 	
 	exit(1);
@@ -42,10 +43,18 @@ int main(int argc, char *argv[])
 		}
 		if (i + 1 < argc - 2 && strcmp(argv[i], "--name") == 0) {
 			strncpy(tun_name, argv[++i], IFNAMSIZ);
-		}
-		if (i + 1 < argc - 2 && strcmp(argv[i], "--mtu") == 0) {
+		} else if (i + 1 < argc - 2 && strcmp(argv[i], "--mtu") == 0) {
 			++i;
 			sscanf(argv[i], "%d", &mtu);
+		} else if (i + 1 < argc - 2 && strcmp(argv[i], "--encap") == 0) {
+			++i;
+			if (strcmp(argv[i], "IPIP") == 0) {
+				mode = IPIP;
+			} else if (strcmp(argv[i], "ICMP") == 0) {
+				mode == ICMP;
+			} else {
+				usage();
+			}
 		}
 	}
 	printf("TI_IPv6_ADDR: %s\nTC_IPv6_ADDR: %s\n", argv[argc - 2], argv[argc - 1]);
