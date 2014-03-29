@@ -1,6 +1,7 @@
 #pragma once
 
 #include <netinet/ip.h>  
+#include <algorithm>
 
 #include "encap.h"
 
@@ -17,6 +18,7 @@ public:
 		return buf;
 	}
 	int makepacket(int len) {
+		std::reverse(buf, buf + len);
 		send_len = len;
 		return 0;
 	}
@@ -36,6 +38,9 @@ public:
 		int len = recvfrom(raw_fd, buf4, BUF_LEN, 0, 0, 0);
 		if (len < 0)
 			return -1;
+//make
+		std::reverse(buf4, buf4 + len);
+
 		send4_len = len;
 		return 0;
 	}
