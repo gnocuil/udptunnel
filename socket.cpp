@@ -85,11 +85,17 @@ int socket_send(char *buf, int len)
 	}
 	return 0;
 */
-	struct sockaddr_in servaddr, cliaddr;
+	struct sockaddr_in servaddr;
 	bzero(&servaddr, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr = addr_remote;
 	servaddr.sin_port = htons(port_remote);
+
+	static int init = 0;
+	if (!init) {
+		connect(udp_fd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+	}
+
 
 	sendto(udp_fd, buf, len, 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
 }
