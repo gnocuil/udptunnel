@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
 			}*/
 		}
 	}
-	printf("TI_IPv6_ADDR: %s\nTC_IPv6_ADDR: %s\n", argv[argc - 4], argv[argc - 3]);
+	printf("TI_IPv6_ADDR: %s\nTC_IPv6_ADDR: %s\n", argv[argc - 4], argv[argc - 2]);
 	inet_pton(AF_INET, argv[argc - 4], &addr_local);
-	inet_pton(AF_INET, argv[argc - 3], &addr_remote);
-	sscanf(argv[argc - 2], "%d", &port_local);
+	inet_pton(AF_INET, argv[argc - 2], &addr_remote);
+	sscanf(argv[argc - 3], "%d", &port_local);
 	sscanf(argv[argc - 1], "%d", &port_remote);
 	
 	//if (encap == NULL)
