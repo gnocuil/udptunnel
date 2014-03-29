@@ -17,8 +17,8 @@
 #include "network.h"
 
 //static int raw_fd;
-static int send6_fd;
-static int send4_fd;
+
+static int udp_fd;
 static char buf[2000];
 
 int socket_init()
@@ -50,11 +50,14 @@ int socket_init()
 
 int socket_init_tun()
 {
+/*
 	send6_fd = socket(PF_INET6, SOCK_RAW, IPPROTO_RAW);
 	if (send6_fd < 0) {
 		fprintf(stderr, "socket_init: Error Creating send socket: %m\n", errno);
 		return -1;
 	}
+*/
+	udp_fd = socket(AF_INET, SOCK_DGRAM, 0);
 }
 
 int handle_socket()
@@ -66,23 +69,10 @@ int handle_socket()
 	//socket_send4(buf, len);
 	tun_send(encap->send4buf(), encap->send4len());
 }
-/*
-int socket_send4(char *buf, int len)
-{
-	struct sockaddr_in dest;
-	memset(&dest, 0, sizeof(dest));
-	dest.sin_family = AF_INET;
-	memcpy(&dest.sin_addr, buf + 16, 4);
-	if (sendto(send4_fd, buf, len, 0, (struct sockaddr *)&dest, sizeof(dest)) < 0) {
-		fprintf(stderr, "socket_send4: Failed to send ipv4 packet len=%d: %m\n", len, errno);
-		return -1;
-	}
-	return 0;
-}
-*/
 
 int socket_send(char *buf, int len)
 {
+/*
 	struct sockaddr_in6 dest;
 	memset(&dest, 0, sizeof(dest));
 	dest.sin6_family = AF_INET6;
@@ -94,4 +84,12 @@ int socket_send(char *buf, int len)
 		return -1;
 	}
 	return 0;
+*/
+	struct sockaddr_in servaddr, cliaddr;
+	bzero(&servaddr, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr = addr_remote;
+	servaddr.sin_port = htons(port_remote);
+
+	sendto(udp_fd, buf, len, 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
 }

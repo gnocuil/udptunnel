@@ -14,18 +14,17 @@
 #include "network.h"
 #include "socket.h"
 #include "encap.h"
-#include "ipip.h"
-#include "icmp.h"
+#include "udp.h"
 
 using namespace std;
 
-#define DEFAULT_MTU 1460
+#define DEFAULT_MTU 1472
 
 static void usage()
 {
-	fprintf(stderr, "Usage: tunnel [options] <TI_IPv6_ADDR> <TC_IPv6_ADDR>\n");
+	fprintf(stderr, "Usage: tunnel [options] <LOCAL_IPv4_ADDR> <LOCAL_UDP_PORT> <REMOTE_IPv4_ADDR> <REMOTE_UDP_PORT>\n");
 	fprintf(stderr, "  options: --name <TUNNEL_NAME>       default: 4over6\n");
-	fprintf(stderr, "           --encap { IPIP | ICMP }    default: IPIP\n");
+//	fprintf(stderr, "           --encap { UDP }    default: UDP\n");
 	fprintf(stderr, "           --mtu <MTU_VALUE>          default: %d\n", DEFAULT_MTU);
 	
 	exit(1);
@@ -49,7 +48,7 @@ int main(int argc, char *argv[])
 		} else if (i + 1 < argc - 2 && strcmp(argv[i], "--mtu") == 0) {
 			++i;
 			sscanf(argv[i], "%d", &mtu);
-		} else if (i + 1 < argc - 2 && strcmp(argv[i], "--encap") == 0) {
+/*		} else if (i + 1 < argc - 2 && strcmp(argv[i], "--encap") == 0) {
 			++i;
 			if (strcmp(argv[i], "IPIP") == 0) {
 				encap = new Encap_IPIP();
@@ -57,15 +56,17 @@ int main(int argc, char *argv[])
 				encap = new Encap_ICMP();
 			} else {
 				usage();
-			}
+			}*/
 		}
 	}
 	printf("TI_IPv6_ADDR: %s\nTC_IPv6_ADDR: %s\n", argv[argc - 2], argv[argc - 1]);
-	inet_pton(AF_INET6, argv[argc - 2], &addr6_TI);
-	inet_pton(AF_INET6, argv[argc - 1], &addr6_TC);
+	inet_pton(AF_INET, argv[argc - 4], &addr_local);
+	inet_pton(AF_INET, argv[argc - 3], &addr_remote);
+	sscanf(argv[argc - 2], "%d", &port_local);
+	sscanf(argv[argc - 1], "%d", &port_remote);
 	
-	if (encap == NULL)
-		encap = new Encap_IPIP();
+	//if (encap == NULL)
+		encap = new Encap_UDP();
 	printf("Encap Mode: %s\n", encap->name());
 
 

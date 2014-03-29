@@ -11,8 +11,8 @@ public:
 	virtual int init_socket() = 0;
 	virtual int handle_socket() = 0;
 	int sendlen() { return send_len; }
-	virtual char* sendbuf() = 0;
 	int send4len() { return send4_len; }
+	virtual char* sendbuf() = 0;
 	virtual char* send4buf() = 0;
 protected:
 	int send_len;

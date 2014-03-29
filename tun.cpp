@@ -18,7 +18,8 @@
 static int tun_fd;
 static char buf[2040];
 
-struct in6_addr addr6_TI, addr6_TC;
+struct in_addr addr_local, addr_remote;
+unsigned short port_local, port_remote;
 
 int tun_create(char *dev)
 {
