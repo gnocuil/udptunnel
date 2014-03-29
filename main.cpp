@@ -22,7 +22,7 @@ using namespace std;
 
 static void usage()
 {
-	fprintf(stderr, "Usage: tunnel [options] <LOCAL_IPv4_ADDR> <LOCAL_UDP_PORT> <REMOTE_IPv4_ADDR> <REMOTE_UDP_PORT>\n");
+	fprintf(stderr, "Usage: tunnel [options] <LOCAL_UDP_PORT> <REMOTE_IPv4_ADDR> <REMOTE_UDP_PORT>\n");
 	fprintf(stderr, "  options: --name <TUNNEL_NAME>       default: 4over6\n");
 //	fprintf(stderr, "           --encap { UDP }    default: UDP\n");
 	fprintf(stderr, "           --mtu <MTU_VALUE>          default: %d\n", DEFAULT_MTU);
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
 			}*/
 		}
 	}
-	printf("TI_IPv6_ADDR: %s\nTC_IPv6_ADDR: %s\n", argv[argc - 4], argv[argc - 2]);
-	inet_pton(AF_INET, argv[argc - 4], &addr_local);
+	printf("REMOTE_IP_ADDR: %s\n", argv[argc - 2]);
+//	inet_pton(AF_INET, argv[argc - 4], &addr_local);
 	inet_pton(AF_INET, argv[argc - 2], &addr_remote);
 	sscanf(argv[argc - 3], "%d", &port_local);
 	sscanf(argv[argc - 1], "%d", &port_remote);
