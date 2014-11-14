@@ -9,6 +9,10 @@
 #include <linux/if_tun.h>
 #include <iostream>
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "tun.h"
 #include "network.h"

@@ -2,14 +2,16 @@
 #include <net/if.h>
 #include <errno.h>
 #include <cstdio>
+#include <cstdlib>
 #include <fcntl.h>
 #include <cstring>
 #include <sys/ioctl.h>
+#include <sys/io.h>
 #include <iostream>
 #include <netinet/ip6.h>  
 #include <netinet/tcp.h>
 #include <netinet/ip_icmp.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #include "tun.h"
 #include "socket.h"
