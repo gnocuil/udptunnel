@@ -93,6 +93,7 @@ int socket_send(char *buf, int len)
 
 	static int init = 0;
 	if (!init) {
+		init = 1;
 		connect(udp_fd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 	}
 
