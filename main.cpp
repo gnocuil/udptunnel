@@ -13,25 +13,37 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <algorithm>
 #include "tun.h"
 #include "network.h"
 #include "socket.h"
-#include "encap.h"
-#include "udp.h"
 
 using namespace std;
 
 #define DEFAULT_MTU 1472
 
+const int BUF_LEN = 4000;
+
 static void usage()
 {
 	fprintf(stderr, "Usage: tunnel [options] <LOCAL_UDP_PORT> <REMOTE_IPv4_ADDR> <REMOTE_UDP_PORT>\n");
 	fprintf(stderr, "  options: --name <TUNNEL_NAME>       default: 4over6\n");
-//	fprintf(stderr, "           --encap { UDP }    default: UDP\n");
 	fprintf(stderr, "           --mtu <MTU_VALUE>          default: %d\n", DEFAULT_MTU);
 	
 	exit(1);
+}
+
+static void* process_udp_read(void* arg)
+{
+    char buf[BUF_LEN];
+	while (1) {
+		int count = handle_socket(buf, BUF_LEN);
+		if (count) {
+		    std::reverse(buf, buf + count);
+		    for (int i = 0; i < count; ++i) buf[i] = ~buf[i];
+            tun_send(buf, count);
+		}
+	}
 }
 
 int main(int argc, char *argv[])
@@ -52,82 +64,38 @@ int main(int argc, char *argv[])
 		} else if (i + 1 < argc - 2 && strcmp(argv[i], "--mtu") == 0) {
 			++i;
 			sscanf(argv[i], "%d", &mtu);
-/*		} else if (i + 1 < argc - 2 && strcmp(argv[i], "--encap") == 0) {
-			++i;
-			if (strcmp(argv[i], "IPIP") == 0) {
-				encap = new Encap_IPIP();
-			} else if (strcmp(argv[i], "ICMP") == 0) {
-				encap = new Encap_ICMP();
-			} else {
-				usage();
-			}*/
 		}
 	}
 	printf("REMOTE_IP_ADDR: %s\n", argv[argc - 2]);
-//	inet_pton(AF_INET, argv[argc - 4], &addr_local);
 	inet_pton(AF_INET, argv[argc - 2], &addr_remote);
-	sscanf(argv[argc - 3], "%d", &port_local);
-	sscanf(argv[argc - 1], "%d", &port_remote);
-	
-	//if (encap == NULL)
-		encap = new Encap_UDP();
-	printf("Encap Mode: %s\n", encap->name());
-
+	int t;
+	sscanf(argv[argc - 3], "%d", &t);
+	port_local = (unsigned short)t;
+	sscanf(argv[argc - 1], "%d", &t);
+	port_remote = (unsigned short)t;
 
 	//Create TUN/TAP interface
-	int tun_fd = tun_create(tun_name);
-	if (tun_fd < 0) {
-		exit(1);
-	}
+	tun_create(tun_name);
+
 	fprintf(stderr, "interface name: %s\n", tun_name);
 
 	set_mtu(tun_name, mtu);//set mtu
 	interface_up(tun_name);//interface up
+	
+	//init udp socket
+	socket_init();
 
-	int pid = fork();
-	if (pid == 0) {//son
-		int raw_fd = socket_init();
-		if (raw_fd < 0) {
-			exit(1);
-		}
-		while (1)
-			handle_socket();
-	}
-	//father
-	socket_init_tun();
-/*
-	int raw_fd = socket_init();
-	if (raw_fd < 0) {
-		exit(1);
-	}
-*/	
-
-	fd_set set;
-	int maxsock = tun_fd;
-//	if (raw_fd > maxsock)
-//		maxsock = raw_fd;
+    pthread_t tid;
+    pthread_create(&tid, NULL, process_udp_read, NULL);
+    
+    char buf[BUF_LEN];
+	
 	while (1) {
-		FD_ZERO(&set);
-		FD_SET(tun_fd, &set);
-//		FD_SET(raw_fd, &set);
-		
-		int ret = select(maxsock + 1, &set, NULL, NULL, NULL);
-		
-		if (ret < 0) {
-			fprintf(stderr, "main: Error in select: %m\n", errno);
-			break;
-		}
-		if (FD_ISSET(tun_fd, &set)) {
-//			printf("select: TUN!!!\n");
-			handle_tun();
-		}
-/*
-		if (FD_ISSET(raw_fd, &set)) {
-//			printf("select: RAW!!!\n");
-			handle_socket();
-		} 
-*/
-	}
-
-	return 0;
+        int count = handle_tun(buf, BUF_LEN);
+        if (count) {
+            std::reverse(buf, buf + count);
+		    for (int i = 0; i < count; ++i) buf[i] = ~buf[i];
+            socket_send(buf, count);
+        }
+    }
 }
